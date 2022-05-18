@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cf88e1b0-226c-46b5-bf96-28a64aae6de4" >
+		<http:listener-connection host="0.0.0.0" port="8087" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="12852217-d9bd-4575-b7da-5902d978f390" >
+		<http:request-connection host="asd" port="8807" />
+	</http:request-config>
+	 <configuration doc:name="Configuration" doc:id="334c1a93-c5b0-4729-b88b-195be38963df" defaultErrorHandler-ref="global-error-handlerError_Handler" />
+	<flow name="sub_http_listenFlow" doc:id="c5c37c70-db9a-4b9b-a8be-ae69f1308b66" >
+		<logger level="INFO" doc:name="Logger" doc:id="b5e8f6e7-98ff-4c04-ade5-3a63daccde45" message="inside subflow"/>
+		<http:request method="GET" doc:name="Request" doc:id="15c7d7ab-0790-411b-90a6-e1755a24e821" path="/asdfdsfsd" config-ref="HTTP_Request_configuration"/>
+	</flow> 
+	<flow name="1_http_listenFlow" doc:id="c485acc9-2900-40cb-9fb1-1841b20863bf" >
+		<http:listener doc:name="Listener" doc:id="002d5654-c40b-42a2-9615-742ee354817a" config-ref="HTTP_Listener_config" path="/http_listen_test">
+			<http:response statusCode="#[vars.httpStatus default 200]" />
+			<http:error-response statusCode="#[vars.httpStatus default 200]">
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="e6de3bec-c0f4-4ddd-8ccd-b5357b47a648" message="before logs"/>
+		<set-payload value='"name": "Hemsagar"' doc:name="Set Payload" doc:id="134fa9a9-8a04-44d5-a8e1-52fd6f234c77" />
+		<flow-ref doc:name="Flow Reference" doc:id="49a23688-8e79-44d4-a3e5-2bfa417948d7" name="sub_http_listenFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="e1f9d2c6-0628-4690-9041-6119c9affd73" message="After payload : #[payload]"/>
+		<choice doc:name="Choice" doc:id="2b4a0732-4588-4739-bbf0-6499ffc68fa5" >
+			<when expression='#[payload != ""]'>
+				<logger level="INFO" doc:name="Logger" doc:id="a2a4563f-f0c7-4729-befb-cb43c6159676" message='"Condition success"'/>
+				<raise-error doc:name="Raise error" doc:id="e66890fe-460a-4699-9ddf-93ce444b133c" type="DEMO:TEST" description='"Raising Error because payload is not empty"'/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="35525337-407e-47f5-9091-85863c83d192" message='"Condition fail"'/>
+			</otherwise>
+		</choice>
+		<!-- <error-handler >
+			 <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="84bfdf7c-2050-4134-833e-4fb8e301f196" type="DEMO:TEST">
+				<logger level="INFO" doc:name="Logger" doc:id="7044dc0c-065b-4f85-a156-67924100b731" message="Inside the Error Prop"/>
+				<set-payload value='#[error.description]' doc:name="Set Payload" doc:id="817511a0-2c19-40af-bf2c-28be94edb8b0" />
+			</on-error-propagate> 
+		</error-handler>-->
+	</flow>
+</mule>

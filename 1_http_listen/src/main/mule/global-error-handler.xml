@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="global-error-handlerError_Handler" doc:id="a373a22a-5eed-452e-a087-d2690a609af9" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0f6ef677-ec68-4bce-8d26-c744eb4fdf0c" type="CONNECTIVITY">
+			<set-variable value="504" doc:name="Set Variable" doc:id="6924a896-2e9d-46db-9a24-88b244e73abf" variableName="httpStatus"/>
+			<logger level="INFO" doc:name="Logger" doc:id="7f96975a-d496-4789-839b-e22881b51a61" message="inside OEP Connectivity error"/>
+			<flow-ref doc:name="Flow Reference" doc:id="b3fce3a1-5a7f-4e22-a82c-74a4da398c65" name="generate_error_reponse"/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a4f41102-52b2-4a74-9efd-cd02f3c49461" type="MULE:CLIENT_SECURITY"/>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d466b6f7-7f42-4c8a-a41d-281a9dac3f9f" type="MULE:SERVER_SECURITY">
+			<choice doc:name="Choice" doc:id="525e9b96-4058-4a65-bbf2-81734b77ae2e" >
+				<when expression="#[error.errorType.identifier == 'UNAUTHORISED']">
+				<set-variable value="401" doc:name="Set Variable" doc:id="7cbe9574-2152-4177-9f0f-7f44b53e85cc" variableName="httpStatus"/>
+				</when>
+				<otherwise >
+					<set-variable value="403" doc:name="Set Variable" doc:id="a47424b0-43fb-49fd-bfc1-0c59504d1a68" variableName="httpStatus"/>
+				</otherwise>
+			</choice>
+			<flow-ref doc:name="Flow Reference" doc:id="a28abfda-9d4e-47a5-a65e-71824159dcc9" name="generate_error_reponse"/>
+		</on-error-propagate>
+	</error-handler>
+	<sub-flow name="generate_error_reponse" doc:id="aa677d93-9204-41da-849e-47c0eea52f1a" >
+		<ee:transform doc:name="Transform Message" doc:id="4e9dd678-edf1-4ff3-bd0c-bc26c8d2389d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorStatusCode: vars.httpStatus,
+	errorMessage: error.description,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c1a206c1-8967-48a8-b5e5-9a3169d269c4" message='#[payload ++ {"status" : "ERROR"}]'/>
+	</sub-flow>
+</mule>

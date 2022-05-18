@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_aa677d93_9204_41da_849e_47c0eea52f1a_Output_Payload = {|
+  errorStatusCode: Null, 
+  errorMessage: String | Null, 
+  errorType: String | Null
+|}
+
